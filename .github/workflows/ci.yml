@@ -125,12 +125,17 @@ jobs:
           curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
           chmod +x install && sudo ./install
 
+      # Dependabot PRs get a base-repo-only token, so a cross-repo checkout
+      # of the scanner fails there with 404. The username-coherence check
+      # above still runs; only the PII scan defers to pushes.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.actor != 'dependabot[bot]'
         with:
           repository: nurazhardotcom/pdpa-sg-clj
           path: pdpa-sg-clj
 
       - name: scan repo for Singapore PII / secrets (NRIC, tokens)
+        if: github.actor != 'dependabot[bot]'
         run: |
           mv "$GITHUB_WORKSPACE/pdpa-sg-clj" /tmp/pdpa-sg-clj
           output=$(cd /tmp/pdpa-sg-clj && bb scan "$GITHUB_WORKSPACE")
